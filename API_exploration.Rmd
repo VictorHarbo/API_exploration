@@ -27,7 +27,7 @@ library(tidyverse)
 res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0q=danish+AND+immigrant&zone=newspaper&encoding=json")
 ```
 
-## Structuring data
+## Structuring datas
 
 ```{r}
 data = fromJSON(res$content)
