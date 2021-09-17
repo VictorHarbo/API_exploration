@@ -1,0 +1,103 @@
+---
+title: "API Exploration"
+author: "Mikkel Bang Maesen & Victor Harbo Johnston"
+date: "9/17/2021"
+output: html_document
+---
+TODO: Write introduction 
+TODO: import from API 
+TODO: Formulate potential use of data
+TODO: Create visuals that can be made from the data
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+API that looks in  newspapers for the words danish and immigrants in the same articles.
+https://api.trove.nla.gov.au/v2/result?q=danish AND immigrant&zone=newspaper&encoding=json
+
+## Loading libraries
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(tidytext)
+library(ggwordcloud)
+
+```
+
+## Importing data from the API
+
+https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&zone=zone=newspaper&q=danish+AND+immigrant&encoding=json
+```{r}
+res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&q=danish+AND+immigrant&zone=newspaper&encoding=xml&n=100")
+
+```
+
+## Structuring data
+```{r}
+data = fromJSON(rawToChar(res$content))
+df <- data.frame(data$response$zone$records$article)
+df
+```
+## Counting articles per year
+```{r}
+year_of_articles <- format(as.Date(df$date, format="%Y-%m-%d"),"%Y")
+tibble(year_of_articles) -> year_of_articles
+years <- count(year_of_articles, year_of_articles)
+years %>% 
+  ggplot(aes(x = year_of_articles, y = n)) +
+  geom_col(fill="#3399FF", colour="black") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+## Newspapers that mention danish immigrants
+```{r}
+Newspapers <- count(df, df$title$value)
+Newspapers <- rename(Newspapers, newspaper = "df$title$value")
+Newspapers <- arrange(Newspapers, desc(n))
+Newspapers
+```
+
+
+```{r}
+Newspapers %>% 
+  top_n(5) %>% 
+  ggplot(aes(label = newspaper, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 6) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red")
+```
+## Finding words before and after the word danish
+```{r}
+snippets <- data_frame(df$snippet)
+snippets <- rename(snippets, text = "df$snippet")
+snippets %>% 
+  unnest_tokens(word, text) %>% 
+  select(word, everything()) -> snippets_tidy
+```
+
+```{r}
+stopwords <- read_csv("stopwords.txt")
+snippets_tidy %>% 
+  anti_join(stopwords, by = "word") %>% 
+  count(word, sort = TRUE) %>% 
+  select(word, n) -> snippets_tidy_nostops
+
+snippets_tidy_nostops
+```
+```{r}
+snippets_tidy_nostops %>% 
+  top_n(40) %>%
+  ggplot(aes(label = word, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 10) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red")
+```
+
+
+```{r}
+stringr::str_extract(df$snippet, "([^\\s]+\\s){3}Danish(\\s[^\\s]+){3}")
+```
+

@@ -4,6 +4,8 @@ author: "Mikkel Bang Maesen & Victor Harbo Johnston"
 date: "9/17/2021"
 output: html_document
 ---
+# Exploring the potentials of the Trove API
+
 TODO: Write introduction 
 TODO: import from API 
 TODO: Formulate potential use of data
@@ -11,34 +13,28 @@ TODO: Create visuals that can be made from the data
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## Trial and error
+This page has been created to encourage other students to try their luck and develop some useful skills in terms of digital data mining in a historical scope. 
+When we started working on it, we were just as new to the programs and methods as you probably are, and all the work you will see below is a product of a positive trial and error process. We encourage you to do the same!
+
+## The Project
+
+Our first step will be to locate our potential sources in the trove database. 
+We will do this by first looking for hits in the database with a so-called API-key. This will not be done in R, but in the browser-program provided by the Trove Archive. 
+
+<<<<<<< HEAD
+## Structuring data
+=======
+>>>>>>> f5bd5d9b98d157d883a97a2bcecec194580883c2
+
+<<<<<<< HEAD
+
+=======
+## Structuring datas
+>>>>>>> 3340847f0dff4a7d31df177afe9787085ca8d11e
+
 API that looks in  newspapers for the words danish and immigrants in the same articles.
 https://api.trove.nla.gov.au/v2/result?q=danish AND immigrant&zone=newspaper&encoding=json
 
-## Loading libraries
-```{r}
-library(httr)
-library(jsonlite)
-library(tidyverse)
-```
 
-## Importing data from the API
-
-```{r}
-res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0q=danish+AND+immigrant&zone=newspaper&encoding=json")
-```
-
-## Structuring data
-
-```{r}
-data = fromJSON(res$content)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
