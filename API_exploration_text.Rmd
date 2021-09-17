@@ -1,0 +1,35 @@
+---
+title: "API_exploration_text"
+output: html_document
+---
+# When did the danish immigrants settle in Australia
+## - Exploring the potentials of the API searches in the Trove-Archive
+
+## Trial and error
+This page has been created to encourage other students to try their luck and develop some useful skills in terms of digital data mining in a historical scope. 
+When we started working on it, we were just as new to the programs and methods as you probably are, and all the work you will see below is a product of a positive trial and error process. We encourage you to do the same!
+
+## The Project
+Our first step will be to locate our potential sources in the trove database. 
+We will do this by first looking for hits in the database with a so-called API-key. This will not be done in R, but in the browser-program provided by the Trove Archive. 
+
+As we want to explore and locate when the danish immigrants traveled to and further settled in Australia, we will first look for the mentioning of Danes in the local Australian newspapers. The Trove-archive luckily includes these, so we will begin by searching for articles, where the keywords "danish" and "immigrant" both occur.
+
+### Step 1: Locate sources
+We will therefore use the API-key underneath, with the words "danish' and "immigrants" included.  
+
+API that looks in  newspapers for the words danish and immigrants in the same articles.
+https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper&encoding=json 
+
+This gives us the 20 different articles in the browser. However it tells us, that there are 10153 articles in total with the mentioning of our keywords "danish" and "immigrant".
+
+### Step 2: Trasfering data from browser to Rstudio
+Now we want to look at the articles and their time of publishing, so that we can locate the flow and settelement of danish immigrants in Australia. 
+
+Unfortunately the API-program has a show-limit of only 100 articles at a time, and not the 10153 it tells us our keywords are included in. 100 is not enough for our study, so we have to expand this (in R), to be able to get a clearer picture.
+
+
+
+
+
+
