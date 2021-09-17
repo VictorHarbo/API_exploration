@@ -23,13 +23,32 @@ https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper&enc
 
 This gives us the 20 different articles in the browser. However it tells us, that there are 10153 articles in total with the mentioning of our keywords "danish" and "immigrant".
 
-### Step 2: Trasfering data from browser to Rstudio
+### Step 2: Trasfering data from browser to Rstudio>>>> REMEMBER TO CORRECT THIS WHEN WE FIXED THE API NUMBER PROBLEM
 Now we want to look at the articles and their time of publishing, so that we can locate the flow and settelement of danish immigrants in Australia. 
 
 Unfortunately the API-program has a show-limit of only 100 articles at a time, and not the 10153 it tells us our keywords are included in. 100 is not enough for our study, so we have to expand this (in R), to be able to get a clearer picture.
 
+<<<<<<<<<CODE>>>>>>>>>>>>
+
+In the chunk of code above, we have downloaded all the data from the API. As mentioned, however, we need to expand the limit of articles included in the data set. We did this by creating a so-called "loop" in the code. 
+First we "call" on the data which in practice is just downloading it from the API-server, and afterwards we expand the limit in the sequence from 100 to 10200 to make sure we have all possible articles. 
+
+##Step 3: Analyzing historical data
+### When did they arrive and settle?
+To figure out when the danish immigrants settled, we will plot a graph illustrating the date of publishing for the individual articles. 
+
+This will hopefully give us a result, where we can see multiple things. First we can discover when the first danish immigrants were mentioned in the newspapers - hinting to when the danish immigrants actually arrived on the Island. And second it can indicate when the danish immigrants were more or less fully settled in Australia, as it is reasonable to presume, that there would be a lot of talk about danish immigrants at this particular time.
 
 
+### Where did they arrive?
+As it is reasonable to believe, that the newspapers located near immigration hubs for danes, wrote considerably more about the immigrants than other newspaper, we will try to find out which newspapers wrote the most about the danes to decide where in Australia the danish immigrants settled. 
 
+We will do this by isolating the newspaper-names from our articles, and afterwards counting the frequency of which they are mentioned. 
+From this we will create a wordcloud, with the 10 most occurring newspapers. 
 
+### What did they write?
+Now that we have located when and where, we would like to know a little bit more about what the dansih immigrants actually did in Australia. Therefore we will look at the so called 'snippet' of text from the API-articles. 
 
+The snippets are - as the name suggests - only bits of the article, but we still believe they are able to tell us a thing or two about the immigrants daily life and general behaviour. 
+
+To do this we will try to locate the words connected with "danish" in the 'snippets'. That means that we will try to  isolate and illuminate the 5 nearest words to "danish" in a given sentence. 
