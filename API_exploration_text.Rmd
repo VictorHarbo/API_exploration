@@ -16,21 +16,19 @@ We will do this by first looking for hits in the database with a so-called API-k
 As we want to explore and locate when the danish immigrants traveled to and further settled in Australia, we will first look for the mentioning of Danes in the local Australian newspapers. The Trove-archive luckily includes these, so we will begin by searching for articles, where the keywords "danish" and "immigrant" both occur.
 
 ### Step 1: Locate sources
-We will therefore use the API-key underneath, with the words "danish' and "immigrants" included.  
+We will therefore use the API-key underneath, with the words "danish' and "immigrants" included. If you want to work with the API yourself, you need to get a personal API key. This can be done at https://trove.nla.gov.au/about/create-something/using-api 
 
-API that looks in  newspapers for the words danish and immigrants in the same articles.
+This API call looks in  newspapers for the words danish and immigrants in the same articles.
 https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper&encoding=json 
 
 This gives us the 20 different articles in the browser. However it tells us, that there are 10153 articles in total with the mentioning of our keywords "danish" and "immigrant".
 
 ### Step 2: Trasfering data from browser to Rstudio>>>> REMEMBER TO CORRECT THIS WHEN WE FIXED THE API NUMBER PROBLEM
-Now we want to look at the articles and their time of publishing, so that we can locate the flow and settelement of danish immigrants in Australia. 
+Now we want to look at the articles and their time of publishing, so that we can locate the flow and settlement of danish immigrants in Australia. 
 
-Unfortunately the API-program has a show-limit of only 100 articles at a time, and not the 10153 it tells us our keywords are included in. 100 is not enough for our study, so we have to expand this (in R), to be able to get a clearer picture.
+Unfortunately the API-browser-interface has a show-limit of only 100 articles at a time, and does not show the 10153 it tells us our keywords are included in. 100 is not enough for our study, so we have to access the API through some other method. To download ALL of the data we have used the Trove Harvester created by Tim Sherratt (https://glam-workbench.net/trove-harvester/).
 
-<<<<<<<<<CODE>>>>>>>>>>>>
-
-In the chunk of code above, we have downloaded all the data from the API. As mentioned, however, we need to expand the limit of articles included in the data set. We did this by creating a so-called "loop" in the code. 
+In the chunk of code above, we have imported all the data from the API. As mentioned, however, we need to expand the limit of articles included in the data set. We did this by creating a so-called "loop" in the code. 
 First we "call" on the data which in practice is just downloading it from the API-server, and afterwards we expand the limit in the sequence from 100 to 10200 to make sure we have all possible articles. 
 
 ##Step 3: Analyzing historical data
@@ -47,8 +45,8 @@ We will do this by isolating the newspaper-names from our articles, and afterwar
 From this we will create a wordcloud, with the 10 most occurring newspapers. 
 
 ### What did they write?
-Now that we have located when and where, we would like to know a little bit more about what the dansih immigrants actually did in Australia. Therefore we will look at the so called 'snippet' of text from the API-articles. 
+Now that we have located when and where, we would like to know a little bit more about what the danish immigrants actually did in Australia. Therefore we will look at the so called 'snippet' of text from the API-articles. 
 
-The snippets are - as the name suggests - only bits of the article, but we still believe they are able to tell us a thing or two about the immigrants daily life and general behaviour. 
+The snippets are - as the name suggests - only bits of the article, but we still believe they are able to tell us a thing or two about the immigrants daily life and general behavior. Furthermore it is also possible to load the full text of all the articles, this is done later in this text.
 
-To do this we will try to locate the words connected with "danish" in the 'snippets'. That means that we will try to  isolate and illuminate the 5 nearest words to "danish" in a given sentence. 
+Another way to look at what was written about the danish immigrants is to locate the words connected with "danish" in the 'snippets'. That means that we will try to  isolate and illuminate the 5 nearest words to "danish" in sentences where the word "danish" occurs. 

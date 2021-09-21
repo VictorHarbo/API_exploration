@@ -1,0 +1,11 @@
+{
+    "query": "https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper",
+    "key": "p75vgrks9qi358s0",
+    "max": null,
+    "pdf": false,
+    "text": true,
+    "image": false,
+    "harvest": "1631967275",
+    "date_started": "2021-09-18T12:14:35.328509",
+    "start": null
+}

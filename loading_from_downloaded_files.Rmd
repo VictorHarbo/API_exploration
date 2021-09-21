@@ -1,0 +1,194 @@
+---
+title: "What can Australian newspapers tell us about danish immigrants in Australia"
+author: "Mikkel Bang Maesen & Victor Harbo Johnston"
+date: "18/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Trial and error
+This text has been created to encourage other students to try their luck and develop some useful skills in terms of digital data mining in a historical scope. 
+When we started working on it, we were just as new to the programs and methods as you probably are, and all the work you will see below is a product of a positive trial and error process. We encourage you to do the same!
+
+## The Project
+We want to explore and locate when the danish immigrants traveled to and further settled in Australia, we will first look for the mentioning of Danes in the local Australian newspapers. The Trove-archive luckily includes these, so we will begin by searching for articles, where the keywords "danish" and "immigrant" both occur.
+
+Our first step will be to locate our potential sources in the trove database. 
+We will do this by first looking for hits in the database with a so-called API-key. This will not be done in R, but in the browser-program provided by the Trove Archive. 
+
+
+### Step 1: Locate sources
+We will therefore use the API-key underneath, with the words "danish' and "immigrants" included. If you want to work with the API yourself, you need to get a personal API key. This can be done at https://trove.nla.gov.au/about/create-something/using-api 
+
+This API call looks in  newspapers for the words danish and immigrants in the same articles.
+https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper&encoding=json 
+
+This gives us the 20 different articles in the browser. However it tells us, that there are 10153 articles in total with the mentioning of our keywords "danish" and "immigrant".
+
+### Step 2: Loading data into RStudio
+Now we want to look at the articles and their time of publishing, so that we can locate the flow and settlement of danish immigrants in Australia. 
+
+Unfortunately the API-browser-interface has a show-limit of only 100 articles at a time, and does not show the 10153 it tells us our keywords are included in. 100 is not enough for our study, so we have to access the API through some other method. To download ALL of the data we have used the Trove Harvester created by Tim Sherratt (https://glam-workbench.net/trove-harvester/).
+```{r, warning=FALSE, message = FALSE}
+# Here we are loading the libraries that R requires to create our analysis. 
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(tidytext)
+library(ggwordcloud)
+library(readtext)
+```
+```{r}
+# Here we are loading our data into RStudio
+df <- read.csv("data/results.csv")
+```
+
+## Step 3: Analyzing historical data
+### When did they arrive and settle?
+To figure out when the danish immigrants settled, we will plot a graph illustrating the date of publishing for the individual articles. 
+
+This will hopefully give us a result, where we can see multiple things. First we can discover when the first danish immigrants were mentioned in the newspapers - hinting to when the danish immigrants actually arrived on the Island. And second it can indicate when the danish immigrants were more or less fully settled in Australia, as it is reasonable to presume, that there would be a lot of talk about danish immigrants at this particular time.
+```{r}
+# In this chunk of code we are creating a dataframe containing the years of publishing of all the articles in the dataset and afterwards we are visualizing them on a graph.
+years <- format(as.Date(df$date, format="%Y-%m-%d"),"%Y")
+tibble(years) -> years
+years <- count(years, years)
+
+years %>% 
+  ggplot(aes(x = years, y = n)) +
+  geom_col(fill="#3399FF", colour="black") +
+  scale_x_discrete(guide = guide_axis(check.overlap = TRUE)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  labs(title="Number of articles per year, that mentions the words 'danish' and 'immigrant' ")
+```
+
+As the graph above tells us danish immigrants where mentioned the most around the years 1858-1866 and again form 1910-1919. This was periods of great importans for the danish national state as the war of 1864 and World War I happened. One could speculate that these events generated a larger sum of danish immigrants, however our findings cannot conclude that by them selfes. Further exploration would be required.  
+### Where did they arrive?
+As it is reasonable to believe, that the newspapers located near immigration hubs for danes, wrote considerably more about the immigrants than other newspaper, we will try to find out which newspapers wrote the most about the danes to decide where in Australia the danish immigrants settled. 
+
+We will do this by isolating the newspaper-names from our articles, and afterwards counting the frequency of which they are mentioned. 
+From this we will create a wordcloud, with the 10 most occurring newspapers.
+```{r}
+# In this chunk of code we are looking at the newspapers that mentions danish immigrants the most. This is done by counting how many mentions each newspaper has in the dataset and the arranging them in a descending order.
+Newspapers <- count(df, df$newspaper_title)
+Newspapers <- rename(Newspapers, newspaper = "df$newspaper_title")
+Newspapers <- arrange(Newspapers, desc(n))
+head(Newspapers, 10)
+```
+```{r}
+# Here we are creating a wordcloud showing the result of the newspaper counting. 
+Newspapers %>% 
+  top_n(20) %>% 
+  ggplot(aes(label = newspaper, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 6) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title="Top 20 newspapers bringing articles on danish immigrants")
+```
+
+### What did they write?
+
+Now that we have located when and where, we would like to know a little bit more about what the danish immigrants actually did in Australia. Therefore we will look at the so called 'snippet' of text from the API-articles. 
+
+The snippets are - as the name suggests - only bits of the article, but we still believe they are able to tell us a thing or two about the immigrants daily life and general behavior. Furthermore it is also possible to load the full text of all the articles, this is done later in this text.
+```{r, warning=FALSE, message = FALSE}
+# The dataset contains small snippets of every newspaper article. In this chunk of code we are creating a list of all the words used in these snippets. Furthermore we apply a stopword list to filter out stopwords. The one we have gone with is the NLTK (Natural Language Toolkit) stopword list available at: https://gist.github.com/sebleier/554280. In this chunk the words also gets counted, so that we can see which words are present the most in the snippets.
+snippets <- tibble(df$snippet)
+snippets <- rename(snippets, text = "df$snippet")
+snippets %>% 
+  unnest_tokens(word, text) %>% 
+  select(word, everything()) -> snippets_tidy
+
+stopwords <- read_csv("stopwords.txt")
+snippets_tidy %>% 
+  anti_join(stopwords, by = "word") %>% 
+  count(word, sort = TRUE) %>% 
+  select(word, n) -> snippets_tidy
+
+snippets_tidy
+```
+```{r, warning=FALSE, message = FALSE}
+# This chunk creates another wordcloud. This one shows the top 40 most used words in the text snippets
+snippets_tidy %>% 
+  top_n(40) %>%
+  ggplot(aes(label = word, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 10) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red") + 
+  labs(title="Top 40 words in article snippets")
+```
+
+From this wordcloud we can take, that newspapers were primarily concerned with the political aspects of immigration. This could be interesting to dive further into through a closereading.
+
+#### Connections
+To further investigate what was written about the danish immigrants is to locate the words connected with "danish" in the 'snippets'. That means that we will try to  isolate and illuminate the 5 nearest words to "danish" in sentences where the word "danish" occurs. 
+```{r}
+# In this chunk of code we have built a wordsearcher, that shows the 5 words before and after the word we are searching for. As an example here we are looking for words around the word Danish. 
+wordsearcher <- tibble(stringr::str_extract(df$snippet, "([^\\s]+\\s){5}Danish(\\s[^\\s]+){5}"))
+wordsearcher[complete.cases(wordsearcher), ]
+```
+
+It might not be clear what this visualization of the data provides. It could be that you would need to look for more than five words before and after the search term. Another solution could be to look at the full text of the articles instead of the snippets, which we will do in the following section of this text. 
+
+### Working with the full text of the articles
+Upuntill now we have only scratched the surface of the content in the Trove archive. To dive further in we now want to examine the complete corpus of the 10153 articles that we have accessed through the API- This is a considerable amount of data, which makes everything run a little slower. 
+
+To do so, we are importing the full text of all 10153 articles in the following code. From these we will create another wordcloud to see if there is a difference between the snippets and the full texts. 
+```{r}
+# It is furtermore possible to extract the full articles from the Trove database through the API. In this chunk of code we are loading these texts into RStudio
+readtext("data/text/*.txt") -> fulltext
+```
+
+```{r, warning=FALSE, message = FALSE}
+# Here we prepare the text from all of the 10153 articles, by applying our stopword list from earlier to them
+fulltext %>% 
+  unnest_tokens(word, text) %>% 
+  select(word, everything()) -> fulltext_tidy
+
+stopwords <- read_csv("stopwords.txt")
+fulltext_tidy %>% 
+  anti_join(stopwords, by = "word") %>% 
+  select(word) -> fulltext_tidy
+
+fulltext_tidy
+```
+```{r, warning=FALSE, message = FALSE}
+# Here we are creating a wordcloud from all the text from all 10153 articles! How cool is that!
+fulltext_tidy %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(100) %>%
+  ggplot(aes(label = word, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 10) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title="Top 100 words in the full articles")
+```
+
+This gives us a untidy wordcloud without much meaning. It is of course different form the one above, however not much of the wordcloud is of importance for our research question. Therefore we will have to "tidy" it up by importing a stopword list. For this project we have created a somewhat arbitrary stopword list, that excludes the numbers, letters and words that does not carry any meaning. 
+```{r, warning=FALSE, message = FALSE}
+# Here we are applying an arbitrary stopwordlist to the dataset. This stopword list was made by looking at the wordcloud from above and adding the words and numbers that does not make sense to the expanden stopword list. 
+extrastopwords <- read_csv("extrastopwords.txt")
+fulltext_tidy %>% 
+  anti_join(extrastopwords, by = "word") %>% 
+  select(word) -> fulltext_tidy_extra
+
+fulltext_tidy_extra %>% 
+  count(word, sort = TRUE) %>% 
+  top_n(100) %>%
+  ggplot(aes(label = word, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 10) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title="Top 100 words in the full articles, after applying extra stopwords.")
+```
+
+When comparing the wordcloud created from the snippets with the one above we discover another aspect of the danish immigration. Where the snippet wordcloud focused on polital terms, this one contains more words related to placenames, objekts and day to day terms. One explanation for this is that the snippets might be created from our search terms "danish" and "immigrant". Whereas the wordcloud above contains the full text from the same articles. This opens for further investigations of what the newspapers focused on in terms of danish immigration. 
+
+## Outro
+Through this text we have imported data from the Trove Archive with their API. We searched for newspaper articles containing the terms "danish" and immigrant". The archive contained 10153 articles that mentioned our search words. We have used these articles to investigate when and where the danish immigrants arrived and what they did in their everyday life. This text should be used as an example on how to relatively easy kick of a research question and materialize introductory and opening analysis of a subject. Furthermore the visualizations created here is an element that could strengthen a given research topic regardless of whatever topic you would want to research. The only thing that can hold you back is your own creativity.

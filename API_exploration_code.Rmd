@@ -11,8 +11,6 @@ TODO: Create visuals that can be made from the data
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-API that looks in  newspapers for the words danish and immigrants in the same articles.
-https://api.trove.nla.gov.au/v2/result?q=danish AND immigrant&zone=newspaper&encoding=json
 
 ## Loading libraries
 ```{r}
@@ -21,15 +19,19 @@ library(jsonlite)
 library(tidyverse)
 library(tidytext)
 library(ggwordcloud)
-
 ```
 
 ## Importing data from the API
 
 https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&zone=zone=newspaper&q=danish+AND+immigrant&encoding=json
-```{r}
-res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&q=danish+AND+immigrant&zone=newspaper&encoding=xml&n=100")
 
+https://api.trove.nla.gov.au/v2/result?q=danish+AND+immigrant&zone=newspaper&encoding=json&n=100&include=articletext&bulkHarvest=true&s=*
+```{r}
+### Working for 100 articles
+# &include=articletext
+#res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&q=danish+AND+immigrant&zone=newspaper&encoding=xml&n=100&include=articletext")
+
+res = GET("https://api.trove.nla.gov.au/v2/result?key=p75vgrks9qi358s0&q=danish+AND+immigrant&zone=newspaper&encoding=json&n=100&include=articletext&bulkHarvest=true&s=*")
 ```
 
 ## Structuring data
@@ -40,11 +42,11 @@ df
 ```
 ## Counting articles per year
 ```{r}
-year_of_articles <- format(as.Date(df$date, format="%Y-%m-%d"),"%Y")
-tibble(year_of_articles) -> year_of_articles
-years <- count(year_of_articles, year_of_articles)
+years <- format(as.Date(df$date, format="%Y-%m-%d"),"%Y")
+tibble(years) -> years
+years <- count(years, years)
 years %>% 
-  ggplot(aes(x = year_of_articles, y = n)) +
+  ggplot(aes(x = years, y = n)) +
   geom_col(fill="#3399FF", colour="black") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
@@ -68,26 +70,24 @@ Newspapers %>%
   theme_minimal() +
   scale_color_gradient(low = "blue", high = "red")
 ```
-## Finding words before and after the word danish
+## Most used words in snippets from articles
 ```{r}
 snippets <- data_frame(df$snippet)
 snippets <- rename(snippets, text = "df$snippet")
 snippets %>% 
   unnest_tokens(word, text) %>% 
   select(word, everything()) -> snippets_tidy
-```
 
-```{r}
 stopwords <- read_csv("stopwords.txt")
 snippets_tidy %>% 
   anti_join(stopwords, by = "word") %>% 
   count(word, sort = TRUE) %>% 
-  select(word, n) -> snippets_tidy_nostops
+  select(word, n) -> snippets_tidy
 
-snippets_tidy_nostops
+snippets_tidy
 ```
 ```{r}
-snippets_tidy_nostops %>% 
+snippets_tidy %>% 
   top_n(40) %>%
   ggplot(aes(label = word, size = n, color = n)) +
   geom_text_wordcloud() +
@@ -95,9 +95,33 @@ snippets_tidy_nostops %>%
   theme_minimal() +
   scale_color_gradient(low = "blue", high = "red")
 ```
-
-
+## Finding words before and after the word danish
 ```{r}
-stringr::str_extract(df$snippet, "([^\\s]+\\s){3}Danish(\\s[^\\s]+){3}")
+stringr::str_extract(df$snippet, "([^\\s]+\\s){5}Danish(\\s[^\\s]+){5}")
+```
+## Working with the full text of the articles
+```{r}
+fulltext <- data_frame(df$articleText)
+fulltext <- rename(fulltext, text = "df$articleText")
+fulltext %>% 
+  unnest_tokens(word, text) %>% 
+  select(word, everything()) -> fulltext_tidy
+
+stopwords <- read_csv("stopwords.txt")
+fulltext_tidy %>% 
+  anti_join(stopwords, by = "word") %>% 
+  count(word, sort = TRUE) %>% 
+  select(word, n) -> fulltext_tidy
+
+fulltext_tidy
+```
+```{r}
+fulltext_tidy %>% 
+  top_n(50) %>%
+  ggplot(aes(label = word, size = n, color = n)) +
+  geom_text_wordcloud() +
+  scale_size_area(max_size = 10) +
+  theme_minimal() +
+  scale_color_gradient(low = "blue", high = "red")
 ```
 
